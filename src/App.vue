@@ -139,6 +139,43 @@ const handleRemoveSessionType = (type: string) => {
     }
   }
 }
+
+const handleExport = () => {
+  if (appData.value) {
+    const dataStr = JSON.stringify(appData.value, null, 2)
+    const blob = new Blob([dataStr], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `schedule-backup-${new Date().toISOString().split('T')[0]}.json`
+    a.click()
+    URL.revokeObjectURL(url)
+    showSuccess('تم تصدير البيانات')
+  }
+}
+
+const handleImport = () => {
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.accept = '.json'
+  input.onchange = async (e) => {
+    const file = (e.target as HTMLInputElement).files?.[0]
+    if (file) {
+      try {
+        const text = await file.text()
+        if (repo.importData(text)) {
+          appData.value = repo.getAppData()
+          showSuccess('تم استيراد البيانات بنجاح')
+        } else {
+          showError('فشل استيراد البيانات - ملف غير صالح')
+        }
+      } catch {
+        showError('فشل استيراد البيانات')
+      }
+    }
+  }
+  input.click()
+}
 </script>
 
 <template>
@@ -251,6 +288,8 @@ const handleRemoveSessionType = (type: string) => {
           @update:default-session-type="handleUpdateDefaultSessionType"
           @add-session-type="handleAddSessionType"
           @remove-session-type="handleRemoveSessionType"
+          @export="handleExport"
+          @import="handleImport"
         />
       </template>
     </main>
