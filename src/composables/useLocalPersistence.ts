@@ -1,4 +1,4 @@
-import { watch, onMounted, onUnmounted } from 'vue'
+import { watch, onUnmounted } from 'vue'
 import type { Ref } from 'vue'
 
 export function useLocalPersistence<T>(
@@ -17,22 +17,31 @@ export function useLocalPersistence<T>(
     }, debounceMs)
   }
 
-  watch(data, () => {
-    if (data.value) {
+  const cancelPending = () => {
+    if (timeoutId) {
+      clearTimeout(timeoutId)
+      timeoutId = null
+    }
+  }
+
+  const persistNow = () => {
+    cancelPending()
+    persistFn()
+  }
+
+  watch(data, (newVal) => {
+    if (newVal) {
       debouncedPersist()
     }
   }, { deep: true })
 
-  onMounted(() => {
-    if (timeoutId) {
-      clearTimeout(timeoutId)
-      persistFn()
-    }
+  onUnmounted(() => {
+    cancelPending()
+    persistNow()
   })
 
-  onUnmounted(() => {
-    if (timeoutId) {
-      clearTimeout(timeoutId)
-    }
-  })
+  return {
+    persistNow,
+    cancelPending
+  }
 }
