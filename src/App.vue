@@ -3,6 +3,8 @@ import { ref, computed, onMounted } from 'vue'
 import { LocalScheduleRepository } from './repositories/localScheduleRepository'
 import { useScheduleData } from './composables/useScheduleData'
 import { useUserPreferences } from './composables/useUserPreferences'
+import { useScheduleUI } from './composables/useScheduleUI'
+import { useLocalPersistence } from './composables/useLocalPersistence'
 import type { Timezone, DayKey, SessionItem } from './types/schedule'
 
 import HeaderBar from './components/shell/HeaderBar.vue'
@@ -12,14 +14,17 @@ import SessionEditor from './components/schedule/SessionEditor.vue'
 import PreferencesPanel from './components/preferences/PreferencesPanel.vue'
 
 const repo = new LocalScheduleRepository()
-const { appData, visibleDays, getDay, hydrate, persist, addSession, updateSession, deleteSession } = useScheduleData(repo)
+const {
+  appData, visibleDays, getDay, hydrate, persist,
+  addSession, updateSession, deleteSession, validateSession
+} = useScheduleData(repo)
 
 const { timezone, themeMode, accentColor, visibleDayKeys, defaultSessionType, sessionTypeTemplates, updateTimezone } = useUserPreferences(appData)
+const { errorMessage, successMessage, showError, showSuccess, currentView, selectedDayKey, navigateToEditor, navigateBack } = useScheduleUI()
 
-const currentView = ref<'home' | 'day' | 'editor' | 'preferences'>('home')
-const selectedDayKey = ref<DayKey | null>(null)
 const editingSession = ref<SessionItem | null>(null)
-const showEditor = ref(false)
+
+useLocalPersistence(appData, persist)
 
 onMounted(() => {
   hydrate()
@@ -36,48 +41,63 @@ const handleSelectDay = (key: string) => {
 }
 
 const handleBack = () => {
-  selectedDayKey.value = null
-  editingSession.value = null
-  showEditor.value = false
-  currentView.value = 'home'
+  navigateBack()
 }
 
 const handleEditSession = (session: SessionItem) => {
   editingSession.value = session
-  showEditor.value = true
-  currentView.value = 'editor'
+  navigateToEditor(selectedDayKey.value!, session.id)
 }
 
 const handleDeleteSession = (sessionId: string) => {
   if (selectedDayKey.value) {
-    deleteSession(selectedDayKey.value, sessionId)
+    const result = deleteSession(selectedDayKey.value, sessionId)
+    if (result) {
+      showSuccess('تم حذف الموعد بنجاح')
+    } else {
+      showError('فشل حذف الموعد')
+    }
   }
 }
 
 const handleAddSession = () => {
   editingSession.value = null
-  showEditor.value = true
-  currentView.value = 'editor'
+  navigateToEditor(selectedDayKey.value!)
 }
 
 const handleSaveSession = (session: Omit<SessionItem, 'id'>) => {
   if (!selectedDayKey.value) return
-  
-  if (editingSession.value) {
-    updateSession(selectedDayKey.value, editingSession.value.id, session)
-  } else {
-    addSession(selectedDayKey.value, session)
+
+  const validation = validateSession(session)
+  if (!validation.valid) {
+    showError(validation.errors[0]?.message || 'بيانات غير صالحة')
+    return
   }
-  
-  handleBack()
+
+  if (editingSession.value) {
+    const result = updateSession(selectedDayKey.value, editingSession.value.id, session)
+    if (result.success) {
+      showSuccess('تم تحديث الموعد بنجاح')
+    } else {
+      showError(result.error?.errors[0]?.message || 'فشل تحديث الموعد')
+      return
+    }
+  } else {
+    const result = addSession(selectedDayKey.value, session)
+    if (result.success) {
+      showSuccess('تم إضافة الموعد بنجاح')
+    } else {
+      showError(result.error?.errors[0]?.message || 'فشل إضافة الموعد')
+      return
+    }
+  }
+
+  navigateBack()
 }
 
 const handleTimezoneChange = (tz: Timezone) => {
   updateTimezone(tz)
-  if (appData.value) {
-    appData.value.preferences.timezone = tz
-    persist()
-  }
+  showSuccess(tz === 'KSA' ? 'تم التحويل لتوقيت السعودية' : 'تم التحويل لتوقيت مصر')
 }
 
 const handlePreferencesClick = () => {
@@ -88,6 +108,7 @@ const handleUpdateVisibleDays = (keys: DayKey[]) => {
   if (appData.value) {
     appData.value.preferences.visibleDayKeys = keys
     persist()
+    showSuccess('تم تحديث الأيام المرئية')
   }
 }
 
@@ -103,6 +124,7 @@ const handleAddSessionType = (type: string) => {
     if (!appData.value.preferences.sessionTypeTemplates.includes(type)) {
       appData.value.preferences.sessionTypeTemplates.push(type)
       persist()
+      showSuccess('تم إضافة نوع جديد')
     }
   }
 }
@@ -113,6 +135,7 @@ const handleRemoveSessionType = (type: string) => {
     if (index !== -1) {
       appData.value.preferences.sessionTypeTemplates.splice(index, 1)
       persist()
+      showSuccess('تم حذف النوع')
     }
   }
 }
@@ -121,8 +144,15 @@ const handleRemoveSessionType = (type: string) => {
 <template>
   <div :class="`min-h-screen ${themeMode === 'dark' ? 'dark' : ''}`">
     <div class="app-bg"></div>
-    
-    <HeaderBar 
+
+    <div v-if="errorMessage" class="fixed top-20 left-1/2 -translate-x-1/2 z-50 px-6 py-3 bg-red-500 text-white rounded-xl shadow-lg animate-pulse">
+      {{ errorMessage }}
+    </div>
+    <div v-if="successMessage" class="fixed top-20 left-1/2 -translate-x-1/2 z-50 px-6 py-3 bg-green-500 text-white rounded-xl shadow-lg animate-pulse">
+      {{ successMessage }}
+    </div>
+
+    <HeaderBar
       :timezone="timezone"
       @update:timezone="handleTimezoneChange"
       @preferences="handlePreferencesClick"
@@ -152,23 +182,23 @@ const handleRemoveSessionType = (type: string) => {
 
       <template v-else-if="currentView === 'day'">
         <div class="flex items-center justify-between mb-6">
-          <button 
-            @click="handleBack" 
+          <button
+            @click="handleBack"
             class="back-btn w-12 h-12 flex items-center justify-center rounded-2xl text-slate-400 hover:text-slate-900 border border-slate-100 shadow-sm transition-all active:scale-90"
           >
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
             </svg>
           </button>
-          <button 
-            @click="handleAddSession" 
+          <button
+            @click="handleAddSession"
             class="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition"
           >
             + إضافة موعد
           </button>
         </div>
 
-        <SessionList 
+        <SessionList
           :day="selectedDay"
           :timezone="timezone"
           @edit="handleEditSession"
@@ -178,8 +208,8 @@ const handleRemoveSessionType = (type: string) => {
 
       <template v-else-if="currentView === 'editor'">
         <div class="flex items-center justify-between mb-6">
-          <button 
-            @click="handleBack" 
+          <button
+            @click="handleBack"
             class="back-btn w-12 h-12 flex items-center justify-center rounded-2xl text-slate-400 hover:text-slate-900 border border-slate-100 shadow-sm transition-all active:scale-90"
           >
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -199,8 +229,8 @@ const handleRemoveSessionType = (type: string) => {
 
       <template v-else-if="currentView === 'preferences'">
         <div class="flex items-center justify-between mb-6">
-          <button 
-            @click="handleBack" 
+          <button
+            @click="handleBack"
             class="back-btn w-12 h-12 flex items-center justify-center rounded-2xl text-slate-400 hover:text-slate-900 border border-slate-100 shadow-sm transition-all active:scale-90"
           >
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -244,7 +274,7 @@ body {
   position: fixed;
   inset: 0;
   z-index: -1;
-  background: 
+  background:
     radial-gradient(circle at 0% 0%, rgba(79, 70, 229, 0.03) 0%, transparent 40%),
     radial-gradient(circle at 100% 100%, rgba(99, 102, 241, 0.03) 0%, transparent 40%);
 }
@@ -259,5 +289,14 @@ body {
     height: auto;
     min-height: 140px;
   }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-pulse {
+  animation: fadeIn 0.3s ease-out;
 }
 </style>
