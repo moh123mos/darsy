@@ -50,6 +50,8 @@ const isValid = computed(() => {
          form.value.durationMinutes >= 15
 })
 
+const formId = computed(() => `session-form-${props.dayKey}`)
+
 const handleSubmit = () => {
   if (!isValid.value) return
   emit('save', {
@@ -60,15 +62,16 @@ const handleSubmit = () => {
 </script>
 
 <template>
-  <div class="bg-white p-6 rounded-[2.5rem] border border-slate-50 shadow-sm">
-    <h3 class="text-xl font-bold text-slate-800 mb-6">
+  <div class="bg-white p-6 rounded-[2.5rem] border border-slate-50 shadow-sm" role="form" :aria-labelledby="`${formId}-title`">
+    <h3 :id="`${formId}-title`" class="text-xl font-bold text-slate-800 mb-6">
       {{ session ? 'تعديل الموعد' : 'إضافة موعد جديد' }}
     </h3>
     
-    <form @submit.prevent="handleSubmit" class="space-y-4">
+    <form @submit.prevent="handleSubmit" class="space-y-4" :id="formId">
       <div>
-        <label class="block text-sm font-medium text-slate-600 mb-1">اسم الطالب</label>
+        <label for="studentName" class="block text-sm font-medium text-slate-600 mb-1">اسم الطالب</label>
         <input
+          id="studentName"
           v-model="form.studentName"
           type="text"
           class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition"
@@ -76,12 +79,14 @@ const handleSubmit = () => {
           required
           minlength="2"
           maxlength="80"
+          autocomplete="off"
         />
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-slate-600 mb-1">الوصف</label>
+        <label for="subtitle" class="block text-sm font-medium text-slate-600 mb-1">الوصف</label>
         <input
+          id="subtitle"
           v-model="form.subtitle"
           type="text"
           class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition"
@@ -90,8 +95,9 @@ const handleSubmit = () => {
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-slate-600 mb-1">نوع الجلسة</label>
+        <label for="sessionType" class="block text-sm font-medium text-slate-600 mb-1">نوع الجلسة</label>
         <select
+          id="sessionType"
           v-model="form.type"
           class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition"
         >
@@ -101,8 +107,9 @@ const handleSubmit = () => {
 
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm font-medium text-slate-600 mb-1">الوقت</label>
+          <label for="startTime" class="block text-sm font-medium text-slate-600 mb-1">الوقت</label>
           <input
+            id="startTime"
             v-model="form.startTime"
             type="time"
             class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition"
@@ -110,8 +117,9 @@ const handleSubmit = () => {
           />
         </div>
         <div>
-          <label class="block text-sm font-medium text-slate-600 mb-1">المدة (دقائق)</label>
+          <label for="duration" class="block text-sm font-medium text-slate-600 mb-1">المدة (دقائق)</label>
           <input
+            id="duration"
             v-model.number="form.durationMinutes"
             type="number"
             class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition"
@@ -124,8 +132,9 @@ const handleSubmit = () => {
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-slate-600 mb-1">ملاحظات</label>
+        <label for="notes" class="block text-sm font-medium text-slate-600 mb-1">ملاحظات</label>
         <textarea
+          id="notes"
           v-model="form.notes"
           class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition"
           rows="3"
