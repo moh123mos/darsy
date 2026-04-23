@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>بوابة المواعيد الذكية</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --surface: #ffffff;
+            --background: #f8fafc;
+        }
+        
+        body {
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
+            background-color: var(--background);
+            color: #1e293b;
+            -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
+        }
+
+        .app-bg {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background: 
+                radial-gradient(circle at 0% 0%, rgba(79, 70, 229, 0.03) 0%, transparent 40%),
+                radial-gradient(circle at 100% 100%, rgba(99, 102, 241, 0.03) 0%, transparent 40%);
+        }
+
+        .day-card {
+            transition: all 0.5s cubic-bezier(0.2, 1, 0.3, 1);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+
+        @media (hover: hover) {
+            .day-card:hover {
+                transform: translateY(-8px) scale(1.02);
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08);
+                border-color: var(--primary);
+            }
+        }
+
+        .page-transition {
+            animation: cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            animation-duration: 0.5s;
+        }
+
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(30px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .animate-in { animation-name: slideInUp; }
+
+        .hidden-page { display: none; }
+
+        .session-item {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .session-item::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--primary);
+            border-radius: 4px 0 0 4px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .session-item:hover::after {
+            opacity: 1;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #e2e8f0;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px; width: 18px;
+            left: 3px; bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider { background-color: #4f46e5; }
+        input:checked + .slider:before { transform: translateX(20px); }
+    </style>
+</head>
+<body class="antialiased">
+    <div class="app-bg"></div>
+
+    <!-- الشريط العلوي -->
+    <nav class="sticky top-0 z-50 bg-white/70 backdrop-blur-md border-b border-slate-100">
+        <div class="max-w-5xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-indigo-600 rounded-lg shadow-lg flex items-center justify-center text-white">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <span class="font-bold text-slate-800 tracking-tight hidden sm:inline">منصة الإدارة</span>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <!-- اختيار التوقيت -->
+                <div class="flex items-center gap-2 bg-slate-50 p-1.5 rounded-full border border-slate-200">
+                    <span id="tzLabel" class="text-[10px] md:text-xs font-bold text-slate-600 px-2">توقيت مصر</span>
+                    <label class="switch">
+                        <input type="checkbox" id="timezoneToggle" onchange="toggleTimezone()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                
+                <div id="statusBadge" class="text-[10px] md:text-xs font-medium px-3 py-1 bg-green-50 text-green-600 rounded-full border border-green-100 flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                    <span id="activeTZ">توقيت القاهرة</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- واجهة الدخول / الرئيسية -->
+    <main id="homePage" class="max-w-5xl mx-auto px-6 py-10 md:py-16 page-transition animate-in">
+        <header class="mb-12 text-center md:text-right">
+            <h1 class="text-4xl md:text-6xl font-bold text-slate-900 mb-4 tracking-tight">جدول المواعيد الأسبوعي</h1>
+            <p class="text-slate-500 text-lg max-w-2xl leading-relaxed">واعلم رعاك الله أنك مسؤول عن وقتك فأحسن استغلاله فيما يرضي الله.</p>
+        </header>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-8" id="daysGrid">
+            <!-- سيتم توليدها برمجياً -->
+        </div>
+
+        <!-- قسم التذكيرات الهامة -->
+        <div class="mt-16 bg-white p-8 rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-50 relative overflow-hidden group">
+            <div class="absolute top-0 left-0 w-2 h-full bg-amber-400"></div>
+            <div class="flex flex-col md:flex-row items-center gap-6 relative z-10">
+                <div class="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center text-3xl shrink-0 group-hover:rotate-12 transition-transform">🕌</div>
+                <div class="text-center md:text-right flex-1">
+                    <h4 class="text-xl font-bold text-slate-800">التزامات خارج الجدول</h4>
+                    <p class="text-slate-500 mt-1 leading-relaxed">تذكر موعد حلقة القرآن الكريم بجمعية خاتم المرسلين يومي الأحد والخميس من الساعة الرابعة حتى السادسة مساءً.</p>
+                </div>
+                <div class="hidden lg:block px-6 py-2 bg-slate-900 text-white text-xs rounded-xl font-medium">ملاحظة هامة</div>
+            </div>
+        </div>
+    </main>
+
+    <!-- واجهة التفاصيل -->
+    <div id="detailPage" class="max-w-3xl mx-auto px-4 md:px-6 py-8 hidden-page page-transition animate-in">
+        <div class="flex flex-col gap-8">
+            <div class="flex items-center justify-between">
+                <button onclick="goHome()" class="back-btn w-12 h-12 flex items-center justify-center rounded-2xl text-slate-400 hover:text-slate-900 border border-slate-100 shadow-sm transition-all active:scale-90">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+                </button>
+                <div class="text-center">
+                    <h2 id="currentDayTitle" class="text-3xl font-bold text-slate-900">اسم اليوم</h2>
+                    <p id="currentDaySubtitle" class="text-indigo-600 text-sm font-medium mt-1 italic tracking-wide">خطة العمل المجدولة</p>
+                </div>
+                <div class="w-12 h-12 invisible"></div>
+            </div>
+
+            <div id="sessionsContainer" class="space-y-4">
+                <!-- المواعيد -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentTZ = 'EGYPT'; // EGYPT or KSA
+        const scheduleData = {
+            saturday: { title: "السبت", icon: "🏠", color: "indigo", sessions: [] },
+            sunday: { title: "الأحد", icon: "💎", color: "blue", sessions: [
+                { time: "01:00 م", duration: "ساعة واحدة", name: "عبد العزيز", sub: "المستوى: صف رابع", type: "جلسة تعليمية" },
+                { time: "02:00 م", duration: "ساعة واحدة", name: "تميم (أم سلمان)", sub: "المستوى: صف سادس", type: "جلسة تعليمية" },
+                { time: "04:00 م", duration: "ساعتان", name: "حلقة القرآن", sub: "جمعية خاتم المرسلين", type: "نشاط ديني" },
+                { time: "08:30 م", duration: "ساعة واحدة", name: "مؤيد الشديدي", sub: "المستوى: صف خامس", type: "جلسة تعليمية" }
+            ]},
+            monday: { title: "الإثنين", icon: "🔥", color: "emerald", sessions: [
+                { time: "02:00 م", duration: "ساعة واحدة", name: "تميم (أم سلمان)", sub: "المستوى: صف سادس", type: "جلسة تعليمية" },
+                { time: "08:30 م", duration: "ساعة واحدة", name: "مؤيد الشديدي", sub: "المستوى: صف خامس", type: "جلسة تعليمية" }
+            ]},
+            tuesday: { title: "الثلاثاء", icon: "⚡", color: "violet", sessions: [
+                { time: "08:30 م", duration: "ساعة واحدة", name: "مؤيد الشديدي", sub: "المستوى: صف خامس", type: "جلسة تعليمية" }
+            ]},
+            wednesday: { title: "الأربعاء", icon: "🚀", color: "rose", sessions: [
+                { time: "08:30 م", duration: "ساعة واحدة", name: "مؤيد الشديدي", sub: "المستوى: صف خامس", type: "جلسة تعليمية" }
+            ]}
+        };
+
+        // وظيفة تحويل الوقت
+        function adjustTime(timeStr) {
+            if (currentTZ === 'EGYPT') return timeStr;
+            
+            let [time, period] = timeStr.split(' ');
+            let [hours, minutes] = time.split(':').map(Number);
+            
+            hours = (hours % 12) + 1; // إضافة ساعة واحدة للسعودية
+            
+            if (hours > 12) {
+                hours = 1;
+            }
+            
+            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')} ${period}`;
+        }
+
+        function toggleTimezone() {
+            const isKsa = document.getElementById('timezoneToggle').checked;
+            currentTZ = isKsa ? 'KSA' : 'EGYPT';
+            
+            document.getElementById('tzLabel').innerText = isKsa ? 'توقيت السعودية' : 'توقيت مصر';
+            document.getElementById('activeTZ').innerText = isKsa ? 'توقيت مكة المكرمة' : 'توقيت القاهرة';
+            
+            // تحديث الواجهة إذا كنا في صفحة التفاصيل
+            const detailPage = document.getElementById('detailPage');
+            if (!detailPage.classList.contains('hidden-page')) {
+                const activeDayKey = Object.keys(scheduleData).find(key => scheduleData[key].title === document.getElementById('currentDayTitle').innerText);
+                if (activeDayKey) showDay(activeDayKey);
+            }
+        }
+
+        function initApp() {
+            const grid = document.getElementById('daysGrid');
+            grid.innerHTML = '';
+            
+            Object.keys(scheduleData).forEach(key => {
+                const day = scheduleData[key];
+                const count = day.sessions.length;
+                const card = document.createElement('div');
+                card.className = "day-card group cursor-pointer bg-white p-7 rounded-[2.5rem] flex flex-col justify-between h-56 relative overflow-hidden";
+                card.onclick = () => showDay(key);
+                
+                card.innerHTML = `
+                    <div class="absolute -right-6 -top-6 w-32 h-32 bg-${day.color}-50/50 rounded-full group-hover:scale-110 transition-transform duration-700"></div>
+                    <div class="relative z-10 flex flex-col h-full">
+                        <div class="flex justify-between items-start mb-auto">
+                            <div class="w-14 h-14 bg-white rounded-2xl shadow-sm border border-slate-50 flex items-center justify-center text-3xl">${day.icon}</div>
+                            <div class="text-slate-300 group-hover:text-${day.color}-500 transition-colors">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-slate-800">${day.title}</h3>
+                            <div class="flex items-center gap-2 mt-2">
+                                <span class="w-2 h-2 rounded-full bg-${count > 0 ? day.color + '-500' : 'slate-200'}"></span>
+                                <span class="text-sm font-medium ${count > 0 ? 'text-slate-600' : 'text-slate-400'}">${count > 0 ? count + ' مواعيد' : 'وقت راحة'}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function showDay(key) {
+            const day = scheduleData[key];
+            const home = document.getElementById('homePage');
+            const detail = document.getElementById('detailPage');
+            const container = document.getElementById('sessionsContainer');
+
+            document.getElementById('currentDayTitle').innerText = day.title;
+            container.innerHTML = "";
+
+            if (day.sessions.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-20 bg-white rounded-[2.5rem] border-2 border-dashed border-slate-100">
+                        <div class="text-5xl mb-4 text-slate-200">🍃</div>
+                        <h3 class="text-xl font-bold text-slate-800">لا توجد أعباء عمل</h3>
+                    </div>
+                `;
+            } else {
+                day.sessions.forEach((s, i) => {
+                    const sessionEl = document.createElement('div');
+                    sessionEl.className = "session-item bg-white p-5 rounded-3xl border border-slate-50 shadow-sm flex flex-row items-center gap-3 md:gap-6 min-h-[90px]";
+                    sessionEl.style.animation = `slideInUp 0.5s ease forwards ${i * 0.1}s`;
+                    sessionEl.style.opacity = "0";
+                    
+                    const adjustedTime = adjustTime(s.time);
+                    
+                    sessionEl.innerHTML = `
+                        <!-- التوقيت المميز بالأزرق -->
+                        <div class="shrink-0 text-center min-w-[60px] md:min-w-[70px]">
+                            <div class="text-lg md:text-xl font-extrabold text-indigo-600 leading-none">${adjustedTime.split(' ')[0]}</div>
+                            <div class="text-[10px] font-bold text-slate-400 mt-1 uppercase">${adjustedTime.split(' ')[1]}</div>
+                        </div>
+                        
+                        <!-- فاصل عمودي -->
+                        <div class="self-stretch w-[1.5px] bg-slate-100 shrink-0"></div>
+                        
+                        <!-- المعلومات الأساسية (نص كامل) -->
+                        <div class="flex-1 py-1">
+                            <h4 class="text-sm md:text-lg font-bold text-slate-800 leading-tight">${s.name}</h4>
+                            <p class="text-xs md:text-sm text-slate-500 mt-1 font-medium leading-normal">${s.sub}</p>
+                        </div>
+
+                        <!-- تفاصيل الجلسة (مركزة جهة اليسار) -->
+                        <div class="shrink-0 flex flex-col items-center justify-center gap-1.5 min-w-[80px] md:min-w-[100px] border-r border-slate-50 pr-2 md:pr-4">
+                            <span class="text-[9px] md:text-xs font-bold text-indigo-600 bg-indigo-50 px-2 md:px-3 py-1 rounded-full text-center">
+                                ${s.duration}
+                            </span>
+                            <span class="text-[8px] md:text-[10px] text-slate-400 font-bold text-center leading-tight uppercase tracking-tighter md:tracking-normal">
+                                ${s.type}
+                            </span>
+                        </div>
+                    `;
+                    container.appendChild(sessionEl);
+                });
+            }
+
+            home.classList.add('hidden-page');
+            detail.classList.remove('hidden-page');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function goHome() {
+            document.getElementById('homePage').classList.remove('hidden-page');
+            document.getElementById('detailPage').classList.add('hidden-page');
+        }
+
+        initApp();
+    </script>
+</body>
+</html>
