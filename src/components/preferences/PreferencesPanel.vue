@@ -32,21 +32,21 @@ const emit = defineEmits<{
 const newType = ref('')
 const dayKeys = Object.keys(DAYS_CONFIG) as DayKey[]
 
-const accentColors = [
-  { name: 'بنفسجي', value: '#4f46e5' },
-  { name: 'أزرق', value: '#2563eb' },
-  { name: 'أخضر', value: '#059669' },
-  { name: 'وردي', value: '#db2777' },
-  { name: 'برتقالي', value: '#ea580c' },
-  { name: 'أحمر', value: '#dc2626' },
-  { name: 'رمادي', value: '#475569' }
-]
+// const accentColors = [
+//   { name: 'بنفسجي', value: '#4f46e5' },
+//   { name: 'أزرق', value: '#2563eb' },
+//   { name: 'أخضر', value: '#059669' },
+//   { name: 'وردي', value: '#db2777' },
+//   { name: 'برتقالي', value: '#ea580c' },
+//   { name: 'أحمر', value: '#dc2626' },
+//   { name: 'رمادي', value: '#475569' }
+// ]
 
-const themeModes: { label: string; value: ThemeMode; icon: string }[] = [
-  { label: 'فاتح', value: 'light', icon: '☀️' },
-  { label: 'داكن', value: 'dark', icon: '🌙' },
-  { label: 'تلقائي', value: 'system', icon: '💻' }
-]
+// const themeModes: { label: string; value: ThemeMode; icon: string }[] = [
+//   { label: 'فاتح', value: 'light', icon: '☀️' },
+//   { label: 'داكن', value: 'dark', icon: '🌙' },
+//   { label: 'تلقائي', value: 'system', icon: '💻' }
+// ]
 
 const toggleDay = (key: DayKey) => {
   const current = [...props.visibleDayKeys]
