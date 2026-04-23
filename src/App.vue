@@ -5,9 +5,13 @@ import { useScheduleData } from './composables/useScheduleData'
 import { useUserPreferences } from './composables/useUserPreferences'
 import { useScheduleUI } from './composables/useScheduleUI'
 import { useLocalPersistence } from './composables/useLocalPersistence'
+import { useToast } from './composables/useAccessibility'
+import { applySampleData } from './utils/sampleData'
 import type { Timezone, DayKey, SessionItem } from './types/schedule'
 
 import HeaderBar from './components/shell/HeaderBar.vue'
+import ConfirmDialog from './components/shell/ConfirmDialog.vue'
+import ToastContainer from './components/shell/ToastContainer.vue'
 import DaysGrid from './components/schedule/DaysGrid.vue'
 import SessionList from './components/schedule/SessionList.vue'
 import SessionEditor from './components/schedule/SessionEditor.vue'
@@ -20,7 +24,8 @@ const {
 } = useScheduleData(repo)
 
 const { timezone, themeMode, accentColor, visibleDayKeys, defaultSessionType, sessionTypeTemplates, updateTimezone } = useUserPreferences(appData)
-const { errorMessage, successMessage, showError, showSuccess, currentView, selectedDayKey, navigateToEditor, navigateBack } = useScheduleUI()
+const { currentView, selectedDayKey, navigateToEditor, navigateBack } = useScheduleUI()
+const { success: showSuccess, error: showError } = useToast()
 
 const editingSession = ref<SessionItem | null>(null)
 
@@ -176,18 +181,40 @@ const handleImport = () => {
   }
   input.click()
 }
+
+const handleLoadSample = () => {
+  if (appData.value) {
+    appData.value = applySampleData(appData.value)
+    persist()
+    showSuccess('تم تحميل البيانات التجريبية')
+  }
+}
+
+const handleClearAll = () => {
+  if (appData.value) {
+    for (const day of appData.value.days) {
+      day.sessions = []
+    }
+    persist()
+    showSuccess('تم مسح جميع البيانات')
+  }
+}
 </script>
 
 <template>
   <div :class="`min-h-screen ${themeMode === 'dark' ? 'dark' : ''}`">
     <div class="app-bg"></div>
 
-    <div v-if="errorMessage" class="fixed top-20 left-1/2 -translate-x-1/2 z-50 px-6 py-3 bg-red-500 text-white rounded-xl shadow-lg animate-pulse">
-      {{ errorMessage }}
-    </div>
-    <div v-if="successMessage" class="fixed top-20 left-1/2 -translate-x-1/2 z-50 px-6 py-3 bg-green-500 text-white rounded-xl shadow-lg animate-pulse">
-      {{ successMessage }}
-    </div>
+    <ToastContainer />
+
+    <ConfirmDialog
+      :show="false"
+      title="تأكيد المسح"
+      message="سيتم حذف جميع المواعيد. هل أنت متأكد؟"
+      type="danger"
+      @confirm="handleClearAll"
+      @cancel="() => {}"
+    />
 
     <HeaderBar
       :timezone="timezone"
@@ -283,6 +310,7 @@ const handleImport = () => {
           :visible-day-keys="visibleDayKeys"
           :default-session-type="defaultSessionType"
           :session-type-templates="sessionTypeTemplates"
+          :app-data="appData"
           @update:timezone="handleTimezoneChange"
           @update:visible-days="handleUpdateVisibleDays"
           @update:default-session-type="handleUpdateDefaultSessionType"
@@ -290,6 +318,8 @@ const handleImport = () => {
           @remove-session-type="handleRemoveSessionType"
           @export="handleExport"
           @import="handleImport"
+          @load-sample="handleLoadSample"
+          @clear-all="handleClearAll"
         />
       </template>
     </main>
