@@ -103,7 +103,7 @@ const addType = () => {
           </div>
         </div>
 
-        <div>
+        <!-- <div >
           <label class="block text-sm font-medium text-slate-600 mb-2">المظهر</label>
           <div class="flex gap-2">
             <button
@@ -142,7 +142,7 @@ const addType = () => {
               <span v-if="accentColor === color.value" class="text-white text-xs md:text-sm">✓</span>
             </button>
           </div>
-        </div>
+        </div> -->
 
         <div>
           <label class="block text-sm font-medium text-slate-600 mb-2">الأيام المرئية</label>

@@ -56,7 +56,7 @@ export const DEFAULT_SESSION_TYPES = [
 export const DAYS_CONFIG: Record<DayKey, { titleAr: string; icon: string; colorToken: string }> = {
   saturday: { titleAr: 'السبت', icon: '🏠', colorToken: 'indigo' },
   sunday: { titleAr: 'الأحد', icon: '💎', colorToken: 'blue' },
-  monday: { titleAr: 'الإثنين', icon: '🔥', colorToken: 'emerald' },
+  monday: { titleAr: 'الإثنين', icon: '🔥', colorToken: 'green' },
   tuesday: { titleAr: 'الثلاثاء', icon: '⚡', colorToken: 'violet' },
   wednesday: { titleAr: 'الأربعاء', icon: '🚀', colorToken: 'rose' },
   thursday: { titleAr: 'الخميس', icon: '📚', colorToken: 'orange' },

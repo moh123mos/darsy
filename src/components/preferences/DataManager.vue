@@ -36,13 +36,13 @@ defineEmits<{
         <div class="text-3xl font-bold text-indigo-600">{{ stats.totalSessions }}</div>
         <div class="text-sm text-indigo-500">إجمالي المواعيد</div>
       </div>
-      <div class="bg-emerald-50 rounded-2xl p-4 text-center">
-        <div class="text-3xl font-bold text-emerald-600">{{ stats.daysWithSessions }}</div>
-        <div class="text-sm text-emerald-500">أيام بها مواعيد</div>
+      <div class="bg-green-50 rounded-2xl p-4 text-center">
+        <div class="text-3xl font-bold text-green-600">{{ stats.daysWithSessions }}</div>
+        <div class="text-sm text-green-500">أيام بها مواعيد</div>
       </div>
     </div>
 
-    <div class="space-y-4">
+    <!-- <div class="space-y-4">
       <div>
         <h4 class="text-sm font-medium text-slate-600 mb-2">تحميل بيانات تجريبية</h4>
         <p class="text-xs text-slate-400 mb-3">
@@ -70,6 +70,6 @@ defineEmits<{
           <span>مسح جميع البيانات</span>
         </button>
       </div>
-    </div>
+    </div> -->
   </div>
 </template>

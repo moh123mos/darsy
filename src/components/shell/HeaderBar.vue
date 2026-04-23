@@ -21,7 +21,7 @@ const toggleTimezone = () => {
 </script>
 
 <template>
-  <nav class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-sm">
+  <nav class="sticky top-0 z-50 bg-white border-b border-slate-100 shadow-sm">
     <div class="max-w-5xl mx-auto px-4 md:px-6 py-3">
       <div class="flex items-center justify-between gap-2">
         <div class="flex items-center gap-2">
@@ -54,8 +54,8 @@ const toggleTimezone = () => {
             </label>
           </div>
           
-          <div class="hidden sm:flex items-center gap-1.5 text-[10px] md:text-xs font-medium px-2 md:px-3 py-1.5 bg-emerald-50 text-emerald-600 rounded-full border border-emerald-100">
-            <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+          <div class="hidden sm:flex items-center gap-1.5 text-[10px] md:text-xs font-medium px-2 md:px-3 py-1.5 bg-green-50 text-green-600 rounded-full border border-green-100">
+            <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
             <span>{{ tzStatus }}</span>
           </div>
         </div>

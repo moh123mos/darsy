@@ -250,7 +250,7 @@ const handleClearAll = () => {
             @click="handleBack"
             class="back-btn w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-xl md:rounded-2xl text-slate-400 hover:text-slate-900 hover:bg-slate-100 border border-slate-100 shadow-sm transition-all active:scale-95"
           >
-            <svg class="w-5 h-5 md:w-6 md:h-6" style="transform: scaleX(-1)" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5 md:w-6 md:h-6" style="transform: scaleX(-1); rotate: 180deg;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
             </svg>
           </button>
@@ -276,7 +276,7 @@ const handleClearAll = () => {
             @click="handleBack"
             class="back-btn w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-xl md:rounded-2xl text-slate-400 hover:text-slate-900 hover:bg-slate-100 border border-slate-100 shadow-sm transition-all active:scale-95"
           >
-            <svg class="w-5 h-5 md:w-6 md:h-6" style="transform: scaleX(-1)" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5 md:w-6 md:h-6" style="transform: scaleX(-1); rotate: 180deg;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
             </svg>
           </button>

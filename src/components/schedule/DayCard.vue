@@ -12,7 +12,7 @@ defineEmits<{
 const colorClasses: Record<string, { bg: string; text: string }> = {
   indigo: { bg: 'bg-indigo-100', text: 'text-indigo-600' },
   blue: { bg: 'bg-blue-100', text: 'text-blue-600' },
-  emerald: { bg: 'bg-emerald-100', text: 'text-emerald-600' },
+  green: { bg: 'bg-green-100', text: 'text-green-600' },
   violet: { bg: 'bg-violet-100', text: 'text-violet-600' },
   rose: { bg: 'bg-rose-100', text: 'text-rose-600' },
   orange: { bg: 'bg-orange-100', text: 'text-orange-600' },
