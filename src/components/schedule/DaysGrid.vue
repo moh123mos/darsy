@@ -11,38 +11,36 @@ const emit = defineEmits<{
   select: [dayKey: string]
 }>()
 
-const focusedIndex = ref(0)
+const focusedIndex = ref(-1)
 
 const handleSelect = (dayKey: string) => {
   emit('select', dayKey)
 }
 
-const handleKeydown = (e: KeyboardEvent) => {
+const handleKeydown = (e: KeyboardEvent, index: number) => {
   const columns = window.innerWidth < 640 ? 1 : window.innerWidth < 1024 ? 2 : 3
   
   switch (e.key) {
     case 'ArrowDown':
       e.preventDefault()
-      focusedIndex.value = (focusedIndex.value + columns) % props.days.length
+      focusedIndex.value = Math.min(index + columns, props.days.length - 1)
       break
     case 'ArrowUp':
       e.preventDefault()
-      focusedIndex.value = (focusedIndex.value - columns + props.days.length) % props.days.length
+      focusedIndex.value = Math.max(index - columns, 0)
       break
     case 'ArrowLeft':
       e.preventDefault()
-      focusedIndex.value = (focusedIndex.value + 1) % props.days.length
+      focusedIndex.value = Math.max(index - 1, 0)
       break
     case 'ArrowRight':
       e.preventDefault()
-      focusedIndex.value = (focusedIndex.value - 1 + props.days.length) % props.days.length
+      focusedIndex.value = Math.min(index + 1, props.days.length - 1)
       break
     case 'Enter':
     case ' ':
       e.preventDefault()
-      if (props.days[focusedIndex.value]) {
-        handleSelect(props.days[focusedIndex.value].key)
-      }
+      handleSelect(props.days[index].key)
       break
   }
 }
@@ -50,20 +48,18 @@ const handleKeydown = (e: KeyboardEvent) => {
 
 <template>
   <div 
-    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-8"
+    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6"
     role="listbox"
     aria-label="أيام الأسبوع"
-    tabindex="0"
-    @keydown="handleKeydown"
   >
     <DayCard
       v-for="(day, index) in days"
       :key="day.key"
       :day="day"
       role="option"
-      :aria-selected="focusedIndex === index"
-      tabindex="-1"
+      :tabindex="index === 0 ? 0 : -1"
       @click="handleSelect(day.key)"
+      @keydown="handleKeydown($event, index)"
     />
   </div>
 </template>

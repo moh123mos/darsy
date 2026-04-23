@@ -3,38 +3,52 @@ import { useToast } from '../../composables/useAccessibility'
 
 const { toasts, dismiss } = useToast()
 
-const typeStyles = {
-  success: 'bg-emerald-500 text-white',
-  error: 'bg-red-500 text-white',
-  info: 'bg-indigo-500 text-white'
-}
-
 const typeIcons = {
   success: '✓',
   error: '✕',
   info: 'ℹ'
 }
+
+const typeBgLight = {
+  success: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+  error: 'bg-red-100 text-red-800 border-red-200',
+  info: 'bg-indigo-100 text-indigo-800 border-indigo-200'
+}
 </script>
 
 <template>
   <Teleport to="body">
-    <div class="fixed top-4 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-2 pointer-events-none">
+    <div 
+      class="fixed top-4 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-3 pointer-events-none w-full max-w-md px-4"
+      aria-live="polite"
+      aria-atomic="true"
+    >
       <TransitionGroup name="toast">
         <div
           v-for="toast in toasts"
           :key="toast.id"
           :class="[
-            'px-6 py-3 rounded-xl shadow-lg pointer-events-auto flex items-center gap-3 min-w-[280px] max-w-md',
-            typeStyles[toast.type]
+            'px-4 py-3 md:px-6 md:py-4 rounded-xl flex items-center gap-3 pointer-events-auto border shadow-xl',
+            'min-w-[280px] max-w-md',
+            typeBgLight[toast.type]
           ]"
           role="alert"
         >
-          <span class="text-lg">{{ typeIcons[toast.type] }}</span>
-          <span class="flex-1 font-medium">{{ toast.message }}</span>
+          <span 
+            :class="[
+              'w-6 h-6 md:w-7 md:h-7 rounded-full flex items-center justify-center text-sm md:text-base font-bold',
+              toast.type === 'success' ? 'bg-emerald-500 text-white' : '',
+              toast.type === 'error' ? 'bg-red-500 text-white' : '',
+              toast.type === 'info' ? 'bg-indigo-500 text-white' : ''
+            ]"
+          >
+            {{ typeIcons[toast.type] }}
+          </span>
+          <span class="flex-1 font-medium text-sm md:text-base">{{ toast.message }}</span>
           <button
             @click="dismiss(toast.id)"
-            class="p-1 hover:bg-white/20 rounded-lg transition"
-            aria-label="إغلاق"
+            class="p-1.5 hover:bg-black/10 rounded-lg transition-colors"
+            aria-label="إغلاق الإشعار"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -48,17 +62,17 @@ const typeIcons = {
 
 <style scoped>
 .toast-enter-active {
-  animation: slideIn 0.3s ease-out;
+  animation: slideDown 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .toast-leave-active {
-  animation: slideOut 0.3s ease-in;
+  animation: slideUp 0.3s ease-in forwards;
 }
 
-@keyframes slideIn {
+@keyframes slideDown {
   from {
     opacity: 0;
-    transform: translateY(-20px);
+    transform: translateY(-100%);
   }
   to {
     opacity: 1;
@@ -66,14 +80,14 @@ const typeIcons = {
   }
 }
 
-@keyframes slideOut {
+@keyframes slideUp {
   from {
     opacity: 1;
     transform: translateY(0);
   }
   to {
     opacity: 0;
-    transform: translateY(-20px);
+    transform: translateY(-100%);
   }
 }
 

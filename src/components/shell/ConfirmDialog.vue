@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const props = defineProps<{
+defineProps<{
   show: boolean
   title: string
   message: string
@@ -8,7 +8,7 @@ const props = defineProps<{
   type?: 'danger' | 'warning' | 'info'
 }>()
 
-const emit = defineEmits<{
+defineEmits<{
   confirm: []
   cancel: []
 }>()

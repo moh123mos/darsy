@@ -222,41 +222,41 @@ const handleClearAll = () => {
       @preferences="handlePreferencesClick"
     />
 
-    <main class="max-w-5xl mx-auto px-6 py-10 md:py-16">
+    <main class="max-w-5xl mx-auto px-4 sm:px-6 py-8 md:py-12 lg:py-16">
       <template v-if="currentView === 'home'">
-        <header class="mb-12 text-center md:text-right">
-          <h1 class="text-4xl md:text-6xl font-bold text-slate-900 mb-4 tracking-tight">جدول المواعيد الأسبوعي</h1>
-          <p class="text-slate-500 text-lg max-w-2xl leading-relaxed">واعلم رعاك الله أنك مسؤول عن وقتك فأحسن استغلاله فيما يرضي الله.</p>
+        <header class="mb-8 md:mb-12 text-center md:text-right">
+          <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 mb-3 md:mb-4 tracking-tight">جدول المواعيد الأسبوعي</h1>
+          <p class="text-slate-500 text-base md:text-lg max-w-2xl mx-auto md:mx-0 leading-relaxed">واعلم رعاك الله أنك مسؤول عن وقتك فأحسن استغلاله فيما يرضي الله.</p>
         </header>
 
         <DaysGrid :days="visibleDays" @select="handleSelectDay" />
 
-        <div class="mt-16 bg-white p-8 rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-50 relative overflow-hidden group">
-          <div class="absolute top-0 left-0 w-2 h-full bg-amber-400"></div>
-          <div class="flex flex-col md:flex-row items-center gap-6 relative z-10">
-            <div class="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center text-3xl shrink-0 group-hover:rotate-12 transition-transform">🕌</div>
+        <div class="mt-10 md:mt-16 bg-white p-6 md:p-8 rounded-2xl md:rounded-[2rem] shadow-lg shadow-slate-200/50 border border-slate-100 relative overflow-hidden group">
+          <div class="absolute top-0 left-0 w-1.5 md:w-2 h-full bg-amber-400"></div>
+          <div class="flex flex-col md:flex-row items-center gap-4 md:gap-6 relative z-10">
+            <div class="w-14 h-14 md:w-16 md:h-16 bg-amber-50 rounded-xl md:rounded-2xl flex items-center justify-center text-2xl md:text-3xl shrink-0 group-hover:rotate-12 transition-transform duration-500">🕌</div>
             <div class="text-center md:text-right flex-1">
-              <h4 class="text-xl font-bold text-slate-800">التزامات خارج الجدول</h4>
-              <p class="text-slate-500 mt-1 leading-relaxed">تذكر موعد حلقة القرآن الكريم بجمعية خاتم المرسلين يومي الأحد والخميس من الساعة الرابعة حتى السادسة مساءً.</p>
+              <h4 class="text-lg md:text-xl font-bold text-slate-800">التزامات خارج الجدول</h4>
+              <p class="text-slate-500 mt-1 leading-relaxed text-sm md:text-base">تذكر موعد حلقة القرآن الكريم بجمعية خاتم المرسلين يومي الأحد والخميس من الساعة الرابعة حتى السادسة مساءً.</p>
             </div>
-            <div class="hidden lg:block px-6 py-2 bg-slate-900 text-white text-xs rounded-xl font-medium">ملاحظة هامة</div>
+            <div class="hidden lg:block px-4 md:px-6 py-2 bg-slate-900 text-white text-xs md:text-sm rounded-xl font-medium shrink-0">ملاحظة هامة</div>
           </div>
         </div>
       </template>
 
       <template v-else-if="currentView === 'day'">
-        <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center justify-between mb-4 md:mb-6">
           <button
             @click="handleBack"
-            class="back-btn w-12 h-12 flex items-center justify-center rounded-2xl text-slate-400 hover:text-slate-900 border border-slate-100 shadow-sm transition-all active:scale-90"
+            class="back-btn w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-xl md:rounded-2xl text-slate-400 hover:text-slate-900 hover:bg-slate-100 border border-slate-100 shadow-sm transition-all active:scale-95"
           >
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+            <svg class="w-5 h-5 md:w-6 md:h-6" style="transform: scaleX(-1)" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
             </svg>
           </button>
           <button
             @click="handleAddSession"
-            class="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition"
+            class="px-4 md:px-6 py-2 md:py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition font-medium text-sm md:text-base"
           >
             + إضافة موعد
           </button>
@@ -271,13 +271,13 @@ const handleClearAll = () => {
       </template>
 
       <template v-else-if="currentView === 'editor'">
-        <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center justify-between mb-4 md:mb-6">
           <button
             @click="handleBack"
-            class="back-btn w-12 h-12 flex items-center justify-center rounded-2xl text-slate-400 hover:text-slate-900 border border-slate-100 shadow-sm transition-all active:scale-90"
+            class="back-btn w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-xl md:rounded-2xl text-slate-400 hover:text-slate-900 hover:bg-slate-100 border border-slate-100 shadow-sm transition-all active:scale-95"
           >
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+            <svg class="w-5 h-5 md:w-6 md:h-6" style="transform: scaleX(-1)" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
             </svg>
           </button>
         </div>

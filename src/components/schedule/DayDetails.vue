@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import type { ScheduleDay, SessionItem } from '../../types/schedule'
+import type { ScheduleDay, SessionItem, Timezone } from '../../types/schedule'
 import { useTimezone } from '../../composables/useTimezone'
-import type { Timezone } from '../../types/schedule'
 
 const props = defineProps<{
   day: ScheduleDay
