@@ -1,16 +1,30 @@
 import { computed } from 'vue'
-import type { UserPreferences, Timezone, ThemeMode } from '../types/schedule'
+import type { Ref } from 'vue'
+import type { Timezone, ThemeMode, DayKey } from '../types/schedule'
 import type { AppDataEnvelope } from '../types/schedule'
 
-export function useUserPreferences(appData: { value: AppDataEnvelope | null }) {
-  const preferences = computed<UserPreferences | null>(() => appData.value?.preferences ?? null)
+export function useUserPreferences(appData: Ref<AppDataEnvelope | null>) {
+  const preferences = computed(() => appData.value?.preferences ?? null)
 
-  const timezone = computed<Timezone>(() => preferences.value?.timezone ?? 'EGYPT')
-  const themeMode = computed<ThemeMode>(() => preferences.value?.themeMode ?? 'light')
+  const timezone = computed(() => preferences.value?.timezone ?? 'EGYPT')
+  const themeMode = computed(() => preferences.value?.themeMode ?? 'light')
   const accentColor = computed(() => preferences.value?.accentColor ?? '#4f46e5')
   const visibleDayKeys = computed(() => preferences.value?.visibleDayKeys ?? [])
   const defaultSessionType = computed(() => preferences.value?.defaultSessionType ?? 'جلسة تعليمية')
   const sessionTypeTemplates = computed(() => preferences.value?.sessionTypeTemplates ?? [])
+
+  const isDark = computed(() => themeMode.value === 'dark')
+  const isSystem = computed(() => themeMode.value === 'system')
+
+  const effectiveTheme = computed(() => {
+    if (themeMode.value === 'system') {
+      if (typeof window !== 'undefined' && window.matchMedia) {
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+      }
+      return 'light'
+    }
+    return themeMode.value
+  })
 
   const updateTimezone = (tz: Timezone) => {
     if (preferences.value) {
@@ -30,10 +44,22 @@ export function useUserPreferences(appData: { value: AppDataEnvelope | null }) {
     }
   }
 
-  const updateVisibleDays = (keys: string[]) => {
+  const updateVisibleDays = (keys: DayKey[]) => {
     if (preferences.value) {
-      preferences.value.visibleDayKeys = keys as any
+      preferences.value.visibleDayKeys = keys
     }
+  }
+
+  const toggleDay = (key: DayKey) => {
+    if (!preferences.value) return
+    const current = [...preferences.value.visibleDayKeys]
+    const index = current.indexOf(key)
+    if (index === -1) {
+      current.push(key)
+    } else if (current.length > 1) {
+      current.splice(index, 1)
+    }
+    preferences.value.visibleDayKeys = current
   }
 
   const updateDefaultSessionType = (type: string) => {
@@ -57,6 +83,16 @@ export function useUserPreferences(appData: { value: AppDataEnvelope | null }) {
     }
   }
 
+  const resetToDefaults = () => {
+    if (preferences.value) {
+      preferences.value.timezone = 'EGYPT'
+      preferences.value.themeMode = 'light'
+      preferences.value.accentColor = '#4f46e5'
+      preferences.value.visibleDayKeys = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'saturday']
+      preferences.value.defaultSessionType = 'جلسة تعليمية'
+    }
+  }
+
   return {
     preferences,
     timezone,
@@ -65,12 +101,17 @@ export function useUserPreferences(appData: { value: AppDataEnvelope | null }) {
     visibleDayKeys,
     defaultSessionType,
     sessionTypeTemplates,
+    isDark,
+    isSystem,
+    effectiveTheme,
     updateTimezone,
     updateThemeMode,
     updateAccentColor,
     updateVisibleDays,
+    toggleDay,
     updateDefaultSessionType,
     addSessionTypeTemplate,
-    removeSessionTypeTemplate
+    removeSessionTypeTemplate,
+    resetToDefaults
   }
 }
